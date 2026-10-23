@@ -7,8 +7,14 @@ from copy import deepcopy
 from functools import partial
 from typing import TYPE_CHECKING
 
-import psutil
-from alive_progress import alive_bar
+try:
+    import psutil
+except ImportError:  # Android does not ship psutil; it is only used to theme the bar.
+    psutil = None  # type: ignore
+try:
+    from alive_progress import alive_bar
+except ImportError:  # Some builds omit the terminal progress bar.
+    alive_bar = None  # type: ignore
 
 if TYPE_CHECKING:
     from modules.config.config import Config
@@ -80,9 +86,9 @@ def choose_1g1r_orchestrator(
     else:
         progress_bar: str = 'smooth'
         spinner: str = 'waves'
-        parent_processes: list[str] = [
-            str(x).lower() for x in psutil.Process(os.getpid()).parents()
-        ]
+        parent_processes: list[str] = (
+            [str(x).lower() for x in psutil.Process(os.getpid()).parents()] if psutil else []
+        )
 
         if any(
             s
@@ -95,18 +101,21 @@ def choose_1g1r_orchestrator(
                 progress_bar = 'classic2'
                 spinner = 'classic'
 
-        alive_bar_context = alive_bar(
-            total=len(processed_titles) + len(superset_processed_titles) + len(compilations),
-            title='• Selecting 1G1R titles',
-            length=20,
-            enrich_print=False,
-            stats=False,
-            monitor='{percent:.2%}',
-            receipt_text=True,
-            bar=progress_bar,
-            spinner=spinner,
-            file=sys.stderr,
-        )
+        if alive_bar is None:
+            alive_bar_context = nullcontext()
+        else:
+            alive_bar_context = alive_bar(
+                total=len(processed_titles) + len(superset_processed_titles) + len(compilations),
+                title='• Selecting 1G1R titles',
+                length=20,
+                enrich_print=False,
+                stats=False,
+                monitor='{percent:.2%}',
+                receipt_text=True,
+                bar=progress_bar,
+                spinner=spinner,
+                file=sys.stderr,
+            )
 
     # Define choose_1g1r as the function to run on multiple processors,
     # and use a partial to prepush arg values into it as a sort of prepackaged

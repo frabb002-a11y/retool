@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!DOCTYPE datafile PUBLIC "-//Logiqx//DTD ROM Management Datafile//EN" "http://www.logiqx.com/Dats/datafile.dtd">
+<datafile>
+	<header>
+		<name>Retool Android Example</name>
+		<description>Small synthetic DAT used to try Retool on Android</description>
+		<version>2026-01-01</version>
+		<author>Retool</author>
+		<url></url>
+	</header>
+	<game name="Example Game (USA)">
+		<description>Example Game (USA)</description>
+		<rom name="Example Game (USA).bin" size="1024" crc="11111111"/>
+	</game>
+	<game name="Example Game (Europe)">
+		<description>Example Game (Europe)</description>
+		<rom name="Example Game (Europe).bin" size="1024" crc="22222222"/>
+	</game>
+	<game name="Example Game (Demo) (USA)">
+		<description>Example Game (Demo) (USA)</description>
+		<rom name="Example Game (Demo) (USA).bin" size="512" crc="33333333"/>
+	</game>
+</datafile>
