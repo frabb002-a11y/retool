@@ -8,6 +8,7 @@ you don't want.
 https://github.com/unexpectedpanda/retool
 """
 
+import os
 import pathlib
 import sys
 import time
@@ -150,6 +151,15 @@ def main(gui_input: UserInput | None = None) -> None:
         and pathlib.Path(config.path_metadata).is_dir()
     ):
         download_updates: str = ''
+
+        if os.environ.get('RETOOL_NONINTERACTIVE') == '1':
+            eprint(
+                'Clone lists or metadata files are missing. Download them from the '
+                'Data screen. Continuing without them.',
+                level='warning',
+                indent=0,
+            )
+            download_updates = 'n'
 
         while not (download_updates == 'y' or download_updates == 'n'):
             eprint(

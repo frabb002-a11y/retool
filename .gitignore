@@ -15,6 +15,9 @@ retroachievements/
 !.gitignore
 !.dev
 !tests/**/*.dat
+!android/app/src/main/assets/example.dat
+!android/app/src/main/assets/config/
+!android/app/src/main/assets/config/internal-config.json
 
 # dependencies
 /node_modules

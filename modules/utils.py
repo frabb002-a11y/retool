@@ -319,10 +319,16 @@ def eprint(
         if not text:
             empty_lines = ''
 
-        print(  # noqa: T201
-            f'{empty_lines}{Font.d}Press enter to continue{Font.end}', file=sys.stderr
-        )
-        input()
+        if os.environ.get('RETOOL_NONINTERACTIVE') == '1':
+            print(  # noqa: T201
+                f'{empty_lines}Pause skipped. There is no console to press Enter on.',
+                file=sys.stderr,
+            )
+        else:
+            print(  # noqa: T201
+                f'{empty_lines}{Font.d}Press enter to continue{Font.end}', file=sys.stderr
+            )
+            input()
 
 
 def format_value(value: Any) -> str:
@@ -391,6 +397,14 @@ def minimum_version(min_version: str, file_name: str, gui_input: UserInput | Non
 
     if out_of_date:
         out_of_date_response: str = ''
+
+        if os.environ.get('RETOOL_NONINTERACTIVE') == '1':
+            eprint(
+                f'• The clone list {Font.b}{file_name}{Font.be} requires Retool '
+                f'{min_version!s} or higher. Continuing because this session has no console prompt.',
+                level='error',
+            )
+            return
 
         def query_user(out_of_date_response: str) -> None:
             eprint(f'{Font.overwrite*3}')

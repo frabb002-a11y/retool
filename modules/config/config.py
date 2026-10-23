@@ -215,6 +215,17 @@ class Config:
                     missing_file = True
 
             if missing_file:
+                if os.environ.get('RETOOL_NONINTERACTIVE') == '1':
+                    eprint(
+                        f'{Font.warning_bold}Warning:{Font.warning} One or more '
+                        'of the following files are missing, which Retool needs '
+                        'to operate:',
+                        level='warning',
+                        indent=0,
+                    )
+                    eprint(f'{required_files}', level='warning', wrap=False)
+                    eprint('Downloading them without a prompt.', level='warning')
+                    download_config = 'y'
                 while not download_config or not (download_config == 'y' or download_config == 'n'):
                     eprint(
                         f'{Font.warning_bold}Warning:{Font.warning} One or more '

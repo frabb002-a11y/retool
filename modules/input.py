@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import pathlib
 import re
 import sys
@@ -1607,6 +1608,11 @@ def import_system_settings(
             if options:
                 config.user_input.user_options = f' (-{"".join(sorted(options))})'
 
+    # Android has no usable process pool. A system config can turn single-CPU mode
+    # back off while applying option overrides, so the lock is applied after that.
+    if os.environ.get('RETOOL_FORCE_SINGLE_CPU') == '1':
+        config.user_input.single_cpu = True
+
 
 def load_data(data_file: str, file_type: str, config: Config) -> dict[str, Any]:
     """
@@ -1632,6 +1638,15 @@ def load_data(data_file: str, file_type: str, config: Config) -> dict[str, Any]:
 
         except ValueError:
             download_data_file: str = ''
+
+            if os.environ.get('RETOOL_NONINTERACTIVE') == '1':
+                eprint(
+                    f'• {Font.b}Warning{Font.be}: The {Font.b}{data_file}{Font.be} '
+                    f'{file_type} contains invalid JSON. Retool won\'t '
+                    'be able to use it. Redownload it from the Data screen.',
+                    level='warning',
+                )
+                return data_content
 
             while not download_data_file or not (
                 download_data_file == 'y' or download_data_file == 'n'

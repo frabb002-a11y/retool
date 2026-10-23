@@ -9,8 +9,14 @@ from contextlib import nullcontext
 from functools import partial
 from typing import TYPE_CHECKING, Any
 
-import psutil
-from alive_progress import alive_bar
+try:
+    import psutil
+except ImportError:  # Android does not ship psutil; it is only used to theme the bar.
+    psutil = None  # type: ignore
+try:
+    from alive_progress import alive_bar
+except ImportError:  # Some builds omit the terminal progress bar.
+    alive_bar = None  # type: ignore
 
 import modules.constants as const
 
@@ -133,6 +139,9 @@ class Dat:
         key: str = 'blank'
 
         class_output()
+
+        if os.environ.get('RETOOL_NONINTERACTIVE') == '1':
+            return ''
 
         while key != 'q':
             eprint(
@@ -816,9 +825,9 @@ def process_dat(
     else:
         progress_bar: str = 'smooth'
         spinner: str = 'waves'
-        parent_processes: list[str] = [
-            str(x).lower() for x in psutil.Process(os.getpid()).parents()
-        ]
+        parent_processes: list[str] = (
+            [str(x).lower() for x in psutil.Process(os.getpid()).parents()] if psutil else []
+        )
 
         if any(
             s
@@ -831,18 +840,21 @@ def process_dat(
                 progress_bar = 'classic2'
                 spinner = 'classic'
 
-        alive_bar_context = alive_bar(
-            total=len(titles),
-            title='• Processing DAT file',
-            length=20,
-            enrich_print=False,
-            stats=False,
-            monitor='{percent:.2%}',
-            receipt_text=True,
-            bar=progress_bar,
-            spinner=spinner,
-            file=sys.stderr,
-        )
+        if alive_bar is None:
+            alive_bar_context = nullcontext()
+        else:
+            alive_bar_context = alive_bar(
+                total=len(titles),
+                title='• Processing DAT file',
+                length=20,
+                enrich_print=False,
+                stats=False,
+                monitor='{percent:.2%}',
+                receipt_text=True,
+                bar=progress_bar,
+                spinner=spinner,
+                file=sys.stderr,
+            )
 
     # Define DatNode as the function to run on multiple processors, and use a partial to
     # prepush arg values into it as a sort of prepackaged function so we can use it in a
